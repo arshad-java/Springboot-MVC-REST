@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book — LibraVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c16;
+            --surface: #0f1623;
+            --surface2: #151e30;
+            --surface3: #1a2438;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201,168,76,0.12);
+            --gold-border: rgba(201,168,76,0.22);
+            --text: #e2ddd4;
+            --text-dim: #6b7a94;
+            --text-mid: #9aa3b5;
+            --border: rgba(255,255,255,0.06);
+            --green: #4caf7a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .navbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-brand h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px; font-weight: 600;
+            color: var(--text);
+        }
+        .nav-brand h1 span { color: var(--gold); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-mid);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-back:hover { border-color: var(--gold-border); color: var(--text); }
+
+        /* Main */
+        .main {
+            padding: 40px 32px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 36px;
+            animation: fadeUp 0.5s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .page-header p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            animation: fadeUp 0.5s 0.1s ease both;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        }
+
+        .form-card-header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .form-card-header-icon {
+            width: 36px; height: 36px;
+            background: var(--gold-dim);
+            border: 1px solid var(--gold-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .form-card-header h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .form-card-header p {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .form-body {
+            padding: 32px;
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+        .form-section-title {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gold-dim);
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+        input, select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 3px;
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--gold-border);
+            box-shadow: 0 0 0 3px var(--gold-dim);
+        }
+        input::placeholder { color: var(--text-dim); }
+        select option { background: var(--surface2); }
+
+        /* Availability toggle cards */
+        .avail-cards { display: flex; gap: 14px; }
+        .avail-card {
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 3px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--surface2);
+            text-align: center;
+            position: relative;
+        }
+        .avail-card input[type="radio"] {
+            position: absolute; opacity: 0; width: 0; height: 0;
+        }
+        .avail-card.available.selected {
+            border-color: rgba(76,175,122,0.5);
+            background: rgba(76,175,122,0.08);
+        }
+        .avail-card.issued.selected {
+            border-color: rgba(224,92,92,0.5);
+            background: rgba(224,92,92,0.08);
+        }
+        .avail-card:hover { border-color: rgba(255,255,255,0.15); }
+        .avail-card-icon { font-size: 24px; margin-bottom: 8px; }
+        .avail-card-label { font-size: 13px; font-weight: 500; color: var(--text); }
+        .avail-card-desc { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+        /* Form footer */
+        .form-footer {
+            padding: 24px 32px;
+            border-top: 1px solid var(--border);
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 11px 24px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover { border-color: rgba(255,255,255,0.15); color: var(--text-mid); }
+
+        .btn-save {
+            padding: 11px 28px;
+            background: linear-gradient(135deg, var(--gold), #a8782a);
+            color: #1a1208;
+            border: none;
+            border-radius: 3px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(201,168,76,0.25);
+            transition: all 0.2s;
+        }
+        .btn-save:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(201,168,76,0.35);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span style="font-size:22px;">📚</span>
+            <h1>Libra<span>Vault</span></h1>
+        </div>
+        <a th:href="@{/}" class="btn-back">← Back to Catalogue</a>
+    </nav>
+
+    <div class="main">
+
+        <div class="page-header">
+            <div>
+                <h2>Add New Book</h2>
+                <p>Fill in the details to add a book to the collection</p>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <div class="form-card-header-icon">📖</div>
+                <div>
+                    <h3>Book Details</h3>
+                    <p>All fields are required</p>
+                </div>
+            </div>
+
+            <form th:action="@{/saveBook}" th:object="${book}" method="post">
+                <div class="form-body">
+
+                    <!-- Basic Info -->
+                    <div class="form-section">
+                        <div class="form-section-title">Basic Information</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" th:field="*{title}"
+                                       placeholder="e.g. The Art of War" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Author</label>
+                                <input type="text" th:field="*{author}"
+                                       placeholder="e.g. Sun Tzu" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Catalog Info -->
+                    <div class="form-section">
+                        <div class="form-section-title">Catalogue Details</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Genre</label>
+                                <select th:field="*{genre}" required>
+                                    <option value="">-- Select Genre --</option>
+                                    <option value="Programming">Programming</option>
+                                    <option value="Fiction">Fiction</option>
+                                    <option value="Science">Science</option>
+                                    <option value="History">History</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" step="0.01" min="0"
+                                       th:field="*{price}"
+                                       placeholder="e.g. 499.00" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="form-section" style="margin-bottom:0;">
+                        <div class="form-section-title">Availability Status</div>
+                        <div class="avail-cards">
+                            <label class="avail-card available selected" id="avail-yes"
+                                   onclick="setAvail(true)">
+                                <input type="radio" name="availability" value="true" checked>
+                                <div class="avail-card-icon">✅</div>
+                                <div class="avail-card-label">Available</div>
+                                <div class="avail-card-desc">Book is on the shelf</div>
+                            </label>
+                            <label class="avail-card issued" id="avail-no"
+                                   onclick="setAvail(false)">
+                                <input type="radio" name="availability" value="false">
+                                <div class="avail-card-icon">📤</div>
+                                <div class="avail-card-label">Issued</div>
+                                <div class="avail-card-desc">Book is checked out</div>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-footer">
+                    <a th:href="@{/}" class="btn-cancel">Cancel</a>
+                    <button type="submit" class="btn-save">Save Book</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        function setAvail(isAvailable) {
+            document.getElementById('avail-yes').classList.toggle('selected', isAvailable);
+            document.getElementById('avail-no').classList.toggle('selected', !isAvailable);
+            document.querySelector(`input[value="${isAvailable}"]`).checked = true;
+        }
+    </script>
+</body>
+</html>
