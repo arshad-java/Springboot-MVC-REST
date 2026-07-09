@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — LibraVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c16;
+            --surface: #0f1623;
+            --surface2: #151e30;
+            --surface3: #1a2438;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201,168,76,0.12);
+            --gold-border: rgba(201,168,76,0.22);
+            --text: #e2ddd4;
+            --text-dim: #6b7a94;
+            --text-mid: #9aa3b5;
+            --border: rgba(255,255,255,0.06);
+            --green: #4caf7a;
+            --red: #e05c5c;
+            --blue: #5b8de8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .navbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-brand-icon { font-size: 22px; }
+        .nav-brand h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.03em;
+        }
+        .nav-brand h1 span { color: var(--gold); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-user {
+            font-size: 13px;
+            color: var(--text-mid);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-user-badge {
+            width: 30px; height: 30px;
+            background: var(--gold-dim);
+            border: 1px solid var(--gold-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .nav-user strong { color: var(--text); }
+
+        .btn-logout {
+            padding: 7px 16px;
+            background: transparent;
+            border: 1px solid rgba(224,92,92,0.3);
+            border-radius: 3px;
+            color: #e07070;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(224,92,92,0.1);
+            border-color: rgba(224,92,92,0.6);
+        }
+
+        /* ── Main content ── */
+        .main {
+            padding: 32px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            margin-bottom: 28px;
+            animation: fadeUp 0.5s ease both;
+        }
+        .page-title h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 30px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .page-title p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Stats Cards ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 24px 28px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.5s ease both;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        }
+        .stat-card:nth-child(2) { animation-delay: 0.08s; }
+        .stat-card:nth-child(3) { animation-delay: 0.16s; }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+        .stat-card.blue::before  { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+        .stat-card.green::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+        .stat-card.red::before   { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+
+        .stat-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .stat-label {
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+        .stat-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .stat-icon.blue  { background: rgba(91,141,232,0.12); }
+        .stat-icon.green { background: rgba(76,175,122,0.12); }
+        .stat-icon.red   { background: rgba(224,92,92,0.12); }
+
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 42px;
+            font-weight: 600;
+            line-height: 1;
+        }
+        .stat-value.blue  { color: var(--blue); }
+        .stat-value.green { color: var(--green); }
+        .stat-value.red   { color: var(--red); }
+
+        /* Decorative bg number */
+        .stat-bg-num {
+            position: absolute;
+            right: 16px; bottom: -10px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 80px;
+            font-weight: 700;
+            opacity: 0.04;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 18px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.5s 0.2s ease both;
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+        .search-wrap input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 10px 12px 10px 36px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-wrap input:focus {
+            border-color: var(--gold-border);
+            box-shadow: 0 0 0 3px var(--gold-dim);
+        }
+        .search-wrap input::placeholder { color: var(--text-dim); }
+
+        select.filter-select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            min-width: 150px;
+        }
+        select.filter-select:focus { border-color: var(--gold-border); }
+        select.filter-select option { background: var(--surface2); }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 3px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .btn-search {
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            color: var(--text-mid);
+        }
+        .btn-search:hover { border-color: var(--gold-border); color: var(--text); }
+
+        .btn-reset {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .btn-reset:hover { border-color: rgba(255,255,255,0.15); color: var(--text-mid); }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--gold), #a8782a);
+            color: #1a1208;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(201,168,76,0.2);
+        }
+        .btn-add:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(201,168,76,0.3);
+        }
+
+        .toolbar-spacer { flex: 1; }
+
+        /* ── Table ── */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            animation: fadeUp 0.5s 0.28s ease both;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--gold-border);
+        }
+        th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+        th a {
+            color: var(--text-dim);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+        th a:hover { color: var(--gold); }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--surface2); }
+
+        td {
+            padding: 14px 18px;
+            font-size: 13px;
+            color: var(--text-mid);
+        }
+        td:first-child {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+        .td-title {
+            font-weight: 500;
+            color: var(--text) !important;
+        }
+        .td-price {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 15px;
+            color: var(--gold) !important;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+        .badge-available {
+            background: rgba(76,175,122,0.12);
+            border: 1px solid rgba(76,175,122,0.3);
+            color: #6dd4a0;
+        }
+        .badge-issued {
+            background: rgba(224,92,92,0.1);
+            border: 1px solid rgba(224,92,92,0.25);
+            color: #e89090;
+        }
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+        .actions { display: flex; gap: 8px; }
+        .btn-edit, .btn-delete {
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border: 1px solid;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-edit {
+            background: rgba(201,168,76,0.1);
+            border-color: rgba(201,168,76,0.3);
+            color: var(--gold);
+        }
+        .btn-edit:hover { background: rgba(201,168,76,0.2); border-color: var(--gold); }
+        .btn-delete {
+            background: rgba(224,92,92,0.08);
+            border-color: rgba(224,92,92,0.25);
+            color: #e07070;
+        }
+        .btn-delete:hover { background: rgba(224,92,92,0.18); border-color: var(--red); }
+
+        .empty-row td {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+        .empty-icon { font-size: 36px; display: block; margin-bottom: 12px; opacity: 0.4; }
+
+        /* ── Pagination ── */
+        .pagination-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 24px;
+            padding-bottom: 12px;
+            animation: fadeUp 0.5s 0.36s ease both;
+        }
+        .page-btn {
+            width: 36px; height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-mid);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            transition: all 0.2s;
+        }
+        .page-btn:hover { border-color: var(--gold-border); color: var(--gold); }
+        .page-btn.active {
+            background: var(--gold-dim);
+            border-color: var(--gold-border);
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .page-nav {
+            padding: 0 14px;
+            width: auto;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="nav-brand-icon">📚</span>
+            <h1>Libra<span>Vault</span></h1>
+        </div>
+        <div class="nav-right">
+            <div class="nav-user">
+                <div class="nav-user-badge">👤</div>
+                <span>Welcome, <strong sec:authentication="principal.username"></strong></span>
+            </div>
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn-logout">Sign Out</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="main">
+
+        <div class="page-title">
+            <h2>Book Catalogue</h2>
+            <p>Browse, search, and manage your library collection</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-card-top">
+                    <span class="stat-label">Total Books</span>
+                    <div class="stat-icon blue">📚</div>
+                </div>
+                <div class="stat-value blue" th:text="${totalBooks}">0</div>
+                <div class="stat-bg-num" th:text="${totalBooks}"></div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-card-top">
+                    <span class="stat-label">Available</span>
+                    <div class="stat-icon green">✅</div>
+                </div>
+                <div class="stat-value green" th:text="${availableBooks}">0</div>
+                <div class="stat-bg-num" th:text="${availableBooks}"></div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-card-top">
+                    <span class="stat-label">Issued</span>
+                    <div class="stat-icon red">📤</div>
+                </div>
+                <div class="stat-value red" th:text="${issuedBooks}">0</div>
+                <div class="stat-bg-num" th:text="${issuedBooks}"></div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <form method="get" th:action="@{/}">
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="Search by title or author...">
+                </div>
+
+                <select name="genre" class="filter-select">
+                    <option value="all" th:selected="${genre == 'all' or genre == null}">All Genres</option>
+                    <option value="Programming" th:selected="${genre == 'Programming'}">Programming</option>
+                    <option value="Fiction"     th:selected="${genre == 'Fiction'}">Fiction</option>
+                    <option value="Science"     th:selected="${genre == 'Science'}">Science</option>
+                    <option value="History"     th:selected="${genre == 'History'}">History</option>
+                    <option value="Mathematics" th:selected="${genre == 'Mathematics'}">Mathematics</option>
+                    <option value="Other"       th:selected="${genre == 'Other'}">Other</option>
+                </select>
+
+                <button type="submit" class="btn btn-search">🔎 Search</button>
+                <a th:href="@{/}" class="btn btn-reset">✕ Reset</a>
+
+                <div class="toolbar-spacer"></div>
+
+                <a sec:authorize="hasRole('ADMIN')"
+                   th:href="@{/showNewBookForm}"
+                   class="btn btn-add">＋ Add Book</a>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>
+                            <a th:href="@{/(page=${currentPage},sortField='title',sortDir=${reverseSortDir},keyword=${keyword},genre=${genre})}">
+                                Title
+                                <span th:if="${sortField == 'title'}" th:text="${sortDir == 'asc'} ? '↑' : '↓'"></span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/(page=${currentPage},sortField='author',sortDir=${reverseSortDir},keyword=${keyword},genre=${genre})}">
+                                Author
+                                <span th:if="${sortField == 'author'}" th:text="${sortDir == 'asc'} ? '↑' : '↓'"></span>
+                            </a>
+                        </th>
+                        <th>Genre</th>
+                        <th>
+                            <a th:href="@{/(page=${currentPage},sortField='price',sortDir=${reverseSortDir},keyword=${keyword},genre=${genre})}">
+                                Price
+                                <span th:if="${sortField == 'price'}" th:text="${sortDir == 'asc'} ? '↑' : '↓'"></span>
+                            </a>
+                        </th>
+                        <th>Status</th>
+                        <th sec:authorize="hasRole('ADMIN')">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="book : ${bookPage.content}">
+                        <td th:text="${book.id}"></td>
+                        <td class="td-title" th:text="${book.title}"></td>
+                        <td th:text="${book.author}"></td>
+                        <td th:text="${book.genre}"></td>
+                        <td class="td-price" th:text="'₹' + ${book.price}"></td>
+                        <td>
+                            <span th:if="${book.availability}" class="badge badge-available">Available</span>
+                            <span th:unless="${book.availability}" class="badge badge-issued">Issued</span>
+                        </td>
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <div class="actions">
+                                <a th:href="@{/showFormForUpdate/{id}(id=${book.id})}" class="btn-edit">Edit</a>
+                                <a th:href="@{/deleteBook/{id}(id=${book.id})}"
+                                   class="btn-delete"
+                                   onclick="return confirm('Delete this book?')">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr class="empty-row" th:if="${#lists.isEmpty(bookPage.content)}">
+                        <td sec:authorize="hasRole('ADMIN')" colspan="7">
+                            <span class="empty-icon">📭</span>
+                            No books found matching your criteria.
+                        </td>
+                        <td sec:authorize="!hasRole('ADMIN')" colspan="6">
+                            <span class="empty-icon">📭</span>
+                            No books found matching your criteria.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-wrap">
+            <a class="page-btn page-nav"
+               th:if="${currentPage > 1}"
+               th:href="@{/(page=${currentPage-1},sortField=${sortField},sortDir=${sortDir},keyword=${keyword},genre=${genre})}">
+               ← Prev
+            </a>
+
+            <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+               th:classappend="${currentPage == i} ? ' active'"
+               class="page-btn"
+               th:href="@{/(page=${i},sortField=${sortField},sortDir=${sortDir},keyword=${keyword},genre=${genre})}"
+               th:text="${i}"></a>
+
+            <a class="page-btn page-nav"
+               th:if="${currentPage < totalPages}"
+               th:href="@{/(page=${currentPage+1},sortField=${sortField},sortDir=${sortDir},keyword=${keyword},genre=${genre})}">
+               Next →
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>
