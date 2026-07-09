@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Book</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+          
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Edit Book</h2>
+    <form th:action="@{/saveBook}" th:object="${book}" method="post">
+        <!-- ✅ Hidden id field to preserve book ID on update -->
+        <input type="hidden" th:field="*{id}">
+        <div class="mb-3">
+            <label>Title</label>
+            <input type="text" th:field="*{title}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Author</label>
+            <input type="text" th:field="*{author}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Genre</label>
+            <input type="text" th:field="*{genre}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Price</label>
+            <input type="number" step="0.01" th:field="*{price}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Availability</label>
+            <select th:field="*{availability}" class="form-control">
+                <option value="true">Available</option>
+                <option value="false">Issued</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a th:href="@{/}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+</body>
+</html>
