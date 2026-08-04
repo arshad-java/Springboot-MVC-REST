@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — LibraVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201,168,76,0.15);
+            --text: #e8e4d9;
+            --text-dim: #7a8499;
+            --border: rgba(201,168,76,0.2);
+            --error: #e05c5c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+            top: -300px; left: -200px;
+            pointer-events: none;
+            animation: drift 9s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(80,120,220,0.07) 0%, transparent 70%);
+            bottom: -200px; right: -100px;
+            pointer-events: none;
+            animation: drift 12s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes drift {
+            from { transform: translate(0,0); }
+            to   { transform: translate(30px,20px); }
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 580px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.6);
+            animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+            position: relative;
+            z-index: 10;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Left panel */
+        .panel-left {
+            width: 42%;
+            background: linear-gradient(160deg, #141c2e 0%, #0d1220 100%);
+            border: 1px solid var(--border);
+            border-right: none;
+            padding: 52px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .brand {
+            position: relative;
+            z-index: 2;
+        }
+        .brand-icon { font-size: 40px; margin-bottom: 16px; }
+        .brand h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.1;
+        }
+        .brand h1 span { color: var(--gold); }
+        .brand p {
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .features {
+            position: relative;
+            z-index: 2;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 20px;
+            animation: fadeSlide 0.5s ease both;
+        }
+        .feature-item:nth-child(2) { animation-delay: 0.1s; }
+        .feature-item:nth-child(3) { animation-delay: 0.2s; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateX(-15px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .feature-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--gold-dim);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .feature-text h4 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        .feature-text p {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* Decorative grid */
+        .grid-deco {
+            position: absolute;
+            bottom: 60px; right: 0;
+            width: 120px; height: 120px;
+            opacity: 0.06;
+            background-image:
+                linear-gradient(var(--gold) 1px, transparent 1px),
+                linear-gradient(90deg, var(--gold) 1px, transparent 1px);
+            background-size: 15px 15px;
+        }
+
+        /* Right panel — form */
+        .panel-right {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: none;
+            padding: 52px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+        }
+        .form-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .form-header p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .alert {
+            padding: 11px 15px;
+            border-radius: 3px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert-danger {
+            background: rgba(224,92,92,0.1);
+            border: 1px solid rgba(224,92,92,0.3);
+            color: #f09090;
+        }
+        .alert-success {
+            background: rgba(80,180,120,0.1);
+            border: 1px solid rgba(80,180,120,0.3);
+            color: #80d4a8;
+        }
+
+        .form-row { display: flex; gap: 16px; }
+        .form-group {
+            margin-bottom: 18px;
+            flex: 1;
+        }
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 7px;
+        }
+        input, select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 3px;
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px var(--gold-dim);
+        }
+        input::placeholder { color: var(--text-dim); }
+        select option { background: var(--surface2); }
+
+        .role-cards {
+            display: flex;
+            gap: 12px;
+        }
+        .role-card {
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 3px;
+            padding: 14px 12px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: var(--surface2);
+            position: relative;
+        }
+        .role-card:hover { border-color: rgba(201,168,76,0.4); }
+        .role-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+        .role-card.selected {
+            border-color: var(--gold);
+            background: var(--gold-dim);
+        }
+        .role-card-icon { font-size: 20px; margin-bottom: 6px; }
+        .role-card-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .role-card-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--gold), #a8782a);
+            color: #1a1208;
+            border: none;
+            border-radius: 3px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(201,168,76,0.25);
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(201,168,76,0.35);
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        .footer-link a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        .footer-link a:hover { color: var(--gold-light); }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Left Brand Panel -->
+        <div class="panel-left">
+            <div class="brand">
+                <div class="brand-icon">📚</div>
+                <h1>Libra<span>Vault</span></h1>
+                <p>Library Management System</p>
+            </div>
+
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-dot">🔍</div>
+                    <div class="feature-text">
+                        <h4>Smart Search</h4>
+                        <p>Search books by title, author or filter by genre instantly.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-dot">📊</div>
+                    <div class="feature-text">
+                        <h4>Live Dashboard</h4>
+                        <p>Track total, available, and issued books in real time.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-dot">🔐</div>
+                    <div class="feature-text">
+                        <h4>Role-Based Access</h4>
+                        <p>Separate permissions for admins and regular users.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-deco"></div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="panel-right">
+            <div class="form-header">
+                <h2>Create Account</h2>
+                <p>Join LibraVault and start managing your library</p>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger">
+                ⚠ <span th:text="${error}"></span>
+            </div>
+            <div th:if="${success}" class="alert alert-success">
+                ✓ <span th:text="${success}"></span>
+            </div>
+
+            <form th:action="@{/register}" method="post">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" placeholder="Choose a username" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Create password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" name="confirmPassword" placeholder="Repeat password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Register As</label>
+                    <div class="role-cards">
+                        <label class="role-card selected" id="card-user" onclick="selectRole('ROLE_USER')">
+                            <input type="radio" name="role" value="ROLE_USER" checked>
+                            <div class="role-card-icon">👤</div>
+                            <div class="role-card-title">User</div>
+                            <div class="role-card-desc">Browse &amp; search books</div>
+                        </label>
+                        <label class="role-card" id="card-admin" onclick="selectRole('ROLE_ADMIN')">
+                            <input type="radio" name="role" value="ROLE_ADMIN">
+                            <div class="role-card-icon">🛡</div>
+                            <div class="role-card-title">Admin</div>
+                            <div class="role-card-desc">Full book management</div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+
+            <div class="footer-link">
+                Already have an account? <a th:href="@{/login}">Sign in →</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            document.getElementById('card-user').classList.toggle('selected', role === 'ROLE_USER');
+            document.getElementById('card-admin').classList.toggle('selected', role === 'ROLE_ADMIN');
+            document.querySelector(`input[value="${role}"]`).checked = true;
+        }
+    </script>
+</body>
+</html>
